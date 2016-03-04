@@ -490,12 +490,12 @@ void Background() {
   
   fill(100);
   textSize(12);
-  text("PixelPaint v2 2016", 360, 675);
+  text("PixelPaint v2.1 2016", 360, 675);
   drawMat();
   fill(0, 84, 84);
   stroke(179, 237, 237);
   rect(790, 9, 268, 268);
-  stroke(179, 237, 237);
+  //stroke(179, 237, 237);
   //rect(790, 380, 268, 268);
 }
 
@@ -508,22 +508,18 @@ void Coordinates() {
     coordX = "x: 0";
     coordY = "y: 0";
   }
-  
-  fill(249,249,204);
-  stroke(179, 237, 237);
-  rect(9 ,653, 100, 25);
-  stroke(colr1);
-  rect(10 ,654, 98, 23);
-  fill(0);
+
   if(coordX_buff!=coordX || coordY_buff!=coordY) {
     fill(249,249,204);
-    rect(10 ,654, 98, 23);
+    stroke(colr1);
+    //stroke(179, 237, 237);
+    rect(12 ,624, 114, 23);
     coordX_buff=coordX;
     coordY_buff=coordY;
   }
   fill(colr2);
   textAlign(LEFT,CENTER);
   textSize(15);
-  text(coordX,15,663);
-  text(coordY,65,663);
+  text(coordX,20,634);
+  text(coordY,75,634);
 }
