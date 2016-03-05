@@ -17,11 +17,19 @@ class Motor {
       pinMode(en1, OUTPUT);
       pinMode(en2, OUTPUT);
     }  
-  
-    void Step(bool dir, int val) {
-      int i=0;
+
+    void enable() {
       digitalWrite(en1,1);
       digitalWrite(en2,1);
+    }
+
+    void disable() {
+      digitalWrite(en1,0);
+      digitalWrite(en2,0);
+    }
+    
+    void Step(bool dir, int val) {
+      int i=0;
       while(i!=val) {
         if(dir==1) {
           digitalWrite(pin1,0);
@@ -53,12 +61,11 @@ class Motor {
         }
         i++;
       }
-      digitalWrite(en1,0);
-      digitalWrite(en2,0);
     }  
 };
 
-char data[3845];
+const int N = 64;
+char data[N*N];
 int posZ = 0, posX = 0, posY = 0;
 
 Motor mY(30,31,32,33);
@@ -70,12 +77,12 @@ void setup() {
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   lcd.begin(1, 2);
   lcd.setCursor(0, 0);
   lcd.print("PixelPrinter");
-
+  
   reset();
 }
 
@@ -84,6 +91,9 @@ void loop() {
 }
 
 void reset() {
+  mX.enable();
+  mY.enable();
+  mZ.enable();
   while(digitalRead(A0)!=1) 
     mZ.Step(1,1);
   while(digitalRead(A1)!=1) 
@@ -93,22 +103,20 @@ void reset() {
   posZ = 0;
   posX = 0;
   posY = 0;
-  
-  mX.Step(0,2);
 }
 
 int checkSerial() {
 
   if(Serial.available()>0) {
     if(Serial.peek()=='0' || Serial.peek()=='1') {
-      Serial.readBytes(data, 3845);
+      Serial.readBytes(data, N*N);
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Data recieved.");
       lcd.setCursor(0, 1);
       lcd.print("Ready to print!");
-    }
-    if(Serial.peek()=='P') {
+    } 
+    else if(Serial.peek()=='P') {
       Serial.read();
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -116,7 +124,7 @@ int checkSerial() {
       delay(500);
       Print();
     }
-    if(Serial.peek()=='z') {
+    else if(Serial.peek()=='z') {
       Serial.read();
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -128,7 +136,7 @@ int checkSerial() {
       }
       else lcd.print("min Z");
     }
-    if(Serial.peek()=='Z') {
+    else if(Serial.peek()=='Z') {
       Serial.read();
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -140,7 +148,7 @@ int checkSerial() {
       }
       else lcd.print("max Z"); 
     }
-    if(Serial.peek()=='S') {
+    else if(Serial.peek()=='S') {
       Serial.read();
       lcd.clear();
       lcd.setCursor(1, 0);
@@ -148,52 +156,64 @@ int checkSerial() {
       reset();
       return 1;
     }
+    else Serial.read();
   }
   return 0;
 }
 
 void Print() {
-  int count = 0;
-  int percent = 0 , t = 1;
-
+  int count = 0, row = 1;
+  int percent = 0;
+  
   while(digitalRead(A1) != 1) 
     mY.Step(1,1);
   while(digitalRead(A2) != 1) 
     mX.Step(1,1);  
-  mX.Step(0,2);  
+
+  dispProgress(percent);
   
-  for(int i=0; i<3844; i++) {
+  for(int i=0; i<(N*N); i++) {
     count++;
+    
     if(data[i]=='1') 
       Click();
-    mX.Step(0,1);
-    if(count==62) {
+    if(count!=N)
+      mX.Step(0,1);
+      
+    if(count==N) {
       count = 0;
       mY.Step(0,1);
-      mX.Step(1,62);
+      mX.Step(1,N);
+    }
+
+    if(i == 41*(row)){     
+      row++;
+      dispProgress(++percent);  
     }
     if(checkSerial()==1) 
       break;
-    if(i == 38*t){      
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("Printing...");
-      lcd.setCursor(0, 1);
-      lcd.print(percent);
-      lcd.print("%");
-      if(percent!=100)
-        percent++;
-      else {
-        lcd.setCursor(0, 0);
-        lcd.print("Finished!"); 
-      }
-      t++;
-    }
   }
   reset();
 }
 
 void Click() {
-  mZ.Step(0,3);
-  mZ.Step(1,3);
+  mZ.Step(0,2);
+  mZ.Step(1,2);
 }
+
+void dispProgress(int percent) {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Printing...");
+  lcd.setCursor(0, 1);
+  lcd.print(percent);
+  lcd.print("%");
+  if(percent==100) {
+    lcd.setCursor(0, 0);
+    lcd.clear();
+    lcd.print("Done!");
+    lcd.setCursor(0, 1);
+    lcd.print(percent);
+    lcd.print("%");
+  }
+} 

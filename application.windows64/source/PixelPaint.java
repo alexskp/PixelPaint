@@ -119,13 +119,13 @@ class Dot
     }
   
 };             /////////////////////////////////////////////////////////////////////////////////////////
-final int N = 62; 
+final int N = 64; 
 int div=10;
-char[] data = new char[3845];
+char[] data = new char[N*N];
 int colr1 = color(76, 126, 144);
 int colr2 = color(34, 102, 102);
 int colr3 = color(10, 47, 52);
-int posX=2, posY=2;
+int posX=0, posY=0;
 boolean DrawMat=false, checkSerial=false;
 String imgPath, imgPathTemp = null;
 String saveDir, saveDirTemp = null;
@@ -148,7 +148,7 @@ Button clear,
        brMinus;
 
 PImage inpImg = createImage(248, 248, RGB),
-       chdImg = createImage(62, 62, RGB),
+       chdImg = createImage(N, N, RGB),
        bgrImg = createImage(248, 248, RGB);
 Serial port;
 
@@ -165,7 +165,7 @@ public void setup() {                                                     //SETU
   dot = new Dot[N][N];
   for(int i=0; i<N; i++) {
     for(int j=0; j<N; j++) {
-      dot[i][j] = new Dot(i*10+150, j*10+20);
+      dot[i][j] = new Dot(i*div+150, j*div+20);
     }
   }
   Background();
@@ -223,20 +223,24 @@ public void mouseReleased() {
 }
 
 public void Buttons() {
-  clear = new Button(14,15,110,30,"clear");
-  fill = new Button(14,50,110,30,"fill");
-  random = new Button(14,85,110,30,"random");
-  invert = new Button(14,120,110,30,"invert");
-  open = new Button(14,180,110,30,"open");
-  save = new Button(14,215,110,30,"save");
-  connect = new Button(14,275,110,30,"connect");
-  send = new Button(14,310,110,30,"send");
-  print = new Button(14,345,110,30,"print");
-  stop = new Button(14,380,110,30,"stop");
-  zplus = new Button(24,415,40,30,"+Z");
-  zminus = new Button(74,415,40,30,"-Z");
-  brPlus = new Button(14,500,110,30,"brness+");
-  brMinus = new Button(14,535,110,30,"brness-");
+  open = new Button(14,25,110,30,"open");
+  save = new Button(14,60,110,30,"save");
+  
+  clear = new Button(14,115,110,30,"clear");
+  fill = new Button(14,150,110,30,"fill");
+  random = new Button(14,185,110,30,"random");
+  invert = new Button(14,220,110,30,"invert");
+  
+  brPlus = new Button(14,275,110,30,"brness+");
+  brMinus = new Button(14,310,110,30,"brness-");
+  
+  connect = new Button(14,365,110,30,"connect");
+  send = new Button(14,400,110,30,"send");
+  print = new Button(14,435,110,30,"print");
+  stop = new Button(14,470,110,30,"stop");
+  
+  zplus = new Button(24,505,40,30,"+Z");
+  zminus = new Button(74,505,40,30,"-Z");
 }
 
 public void Clear() {
@@ -295,7 +299,7 @@ public void Connect() {                                    ///////////////CONNEC
   if(connect.check()) {
     try {
       //println(Serial.list());
-      port = new Serial(this, Serial.list()[1], 9600);
+      port = new Serial(this, Serial.list()[1], 115200);
       checkSerial = true;
     }
     catch(Exception e) {}
@@ -317,15 +321,51 @@ public void makeDataArr() {
        }  
      }
    }
-   data[3844] = 'E';
+   
+   /*for(int i=0; i<N; i++) {
+     if((i % 2)==0) {
+       for(int n=0; n<N; n++) {
+         if(dot[n][i].pressed == 1) {
+           println(dot[n][i].pressed);
+           data[count] = '1';
+           count++;
+         } else {
+           data[count] = '0';
+           count++;
+         }  
+       }
+     } else {
+       for(int m=N-1; m>=0; m--) {
+         if(dot[m][i].pressed == 1) {
+           println(dot[m][i].pressed);
+           data[count] = '1';
+           count++;
+         } else {
+           data[count] = '0';
+           count++;
+         }  
+       }      
+     }
+   }
+   */
+   
+   /*int r=0;
+   for(int t=0; t<N; t++) {
+     for(int y=0; y<N; y++){
+       print(data[r]);
+       r++;
+     }
+     println("  " +r);
+   }
+   */
 }
 
 public void Send() {                                                       ////SEND
   makeDataArr();
   if(send.checkS()) {
-    for(int i=0; i<3845; i++) {
+    for(int i=0; i<N*N; i++) {
       port.write(data[i]);
-    } 
+    }
   }
   send.Draw1();
 }
@@ -415,7 +455,7 @@ public void ImgSelected(File selection) {
 
 public void drawImg() {
   
-  image(bgrImg, 800, 19);
+  image(bgrImg, 820, 19);
   
   if(imgPath!=null) 
     inpImg = loadImage(imgPath);
@@ -424,12 +464,12 @@ public void drawImg() {
     inpImg.resize(0,248);
   else inpImg.resize(248,0);
   
-  image(inpImg, 800, 19);
-  chdImg = get(800,19,248,248);
+  image(inpImg, 820, 19);
+  chdImg = get(820,19,248,248);
   Background();
   Coordinates();
-  image(chdImg, 800, 19);  /////////Y390
-  chdImg.resize(62,62);
+  image(chdImg, 820, 19);  /////////Y390
+  chdImg.resize(N,N);
   chdImg.filter(THRESHOLD, brightness);
   chdImg.loadPixels();
   
@@ -462,19 +502,19 @@ public void draw() {
     drawImg();
   }
   
-  if(mouseX>150 && mouseX<770 && mouseY>20 && mouseY<640)
+  if(mouseX>150 && mouseX<790 && mouseY>20 && mouseY<660)
     Coordinates();
     
   posX=(mouseX)/div-15;
   posY=(mouseY)/div-2;
 
   if(mousePressed && (mouseButton==LEFT) && mouseX>150 
-    && mouseX<770 && mouseY>20 && mouseY<640) {
+    && mouseX<790 && mouseY>20 && mouseY<660) {
     dot[posX][posY].Draw2();
     dot[posX][posY].pressed=1;
   }
   if(mousePressed && (mouseButton==RIGHT) && mouseX>150 
-    && mouseX<770 && mouseY>20 && mouseY<640) {
+    && mouseX<790 && mouseY>20 && mouseY<660) {
     dot[posX][posY].Draw1();
     dot[posX][posY].pressed=0;  
   }
@@ -496,46 +536,42 @@ public void Background() {
   } 
   stroke(179,237,237);
   fill(89,89,89); 
-  rect(9, 10, 120, 640);
+  rect(9, 10, 120, 660);
   
   fill(0, 84, 84);
   stroke(179, 237, 237);
-  rect(139, 9, 640, 640);
+  rect(139, 9, 660, 660);
   
   fill(100);
   textSize(12);
-  text("PixelPaint v2.2 2016", 360, 675);          //////////////////////version
+  text("PixelPaint v2.3 2016", 360, 681);          //////////////////////version
   
   fill(0, 84, 84);
   stroke(179, 237, 237);
-  rect(790, 9, 268, 268);
+  rect(810, 9, 268, 268);
 }
 
 public void Coordinates() {
-  String coordX, coordX_buff="", coordY, coordY_buff="";
-  if(posX>0 && posY>0) {
-    coordX = "x:" + (posX);
-    coordY = "y:" + (posY);
-  } else {
-    coordX = "x: 0";
-    coordY = "y: 0";
-  }
+  String coordX = "x: 0", coordX_buff="", coordY = "y: 0", coordY_buff="";
+  
+  coordX = "x:" + (posX);
+  coordY = "y:" + (posY);
 
   if(coordX_buff!=coordX || coordY_buff!=coordY) {
     fill(249,249,204);
     stroke(colr1);
     //stroke(179, 237, 237);
-    rect(12 ,624, 114, 23);
+    rect(12 ,644, 114, 23);
     coordX_buff=coordX;
     coordY_buff=coordY;
   }
   fill(colr2);
   textAlign(LEFT,CENTER);
   textSize(15);
-  text(coordX,20,634);
-  text(coordY,75,634);
+  text(coordX,20,654);
+  text(coordY,75,654);
 }
-  public void settings() {  size(1070, 685); }
+  public void settings() {  size(1090, 685); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "PixelPaint" };
     if (passedArgs != null) {
